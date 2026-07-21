@@ -35,9 +35,9 @@ const REGISTRATION_FIELDS = [
   { key: "remarks", header: "Remarks" },
   { key: "judgeAssigned", header: "Judge Assigned" },
   { key: "presentationSlot", header: "Presentation Slot" },
-  { key: "rankingStatus", header: "Ranking Status" },
   { key: "createdAt", header: "Created At" },
   { key: "updatedAt", header: "Updated At" },
+  { key: "rankingStatus", header: "Ranking Status" },
 ];
 
 const USERS_FIELDS = [

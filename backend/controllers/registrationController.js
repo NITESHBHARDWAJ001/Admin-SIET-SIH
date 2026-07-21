@@ -1,7 +1,6 @@
-const ExcelJS = require("exceljs");
 const sheetsService = require("../services/googleSheets/sheetsService");
 const { logAction } = require("../utils/auditLog");
-const { toCsv } = require("../utils/csv");
+const { sendExport } = require("../utils/exportUtil");
 const {
   departmentOf,
   toListItem,
@@ -165,27 +164,7 @@ async function deleteRegistration(req, res) {
 async function exportRegistrations(req, res) {
   const teams = applyFilters(await sheetsService.getRows("Registration"), req.query);
   const format = req.query.format === "xlsx" ? "xlsx" : "csv";
-
-  if (format === "csv") {
-    const csv = toCsv(teams, EXPORT_COLUMNS);
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=registrations.csv");
-    return res.send(csv);
-  }
-
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Registrations");
-  sheet.columns = EXPORT_COLUMNS.map((c) => ({ header: c.label, key: c.key, width: 22 }));
-  teams.forEach((t) => sheet.addRow(t));
-  sheet.getRow(1).font = { bold: true };
-
-  res.setHeader(
-    "Content-Type",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  );
-  res.setHeader("Content-Disposition", "attachment; filename=registrations.xlsx");
-  await workbook.xlsx.write(res);
-  res.end();
+  await sendExport(res, teams, EXPORT_COLUMNS, format, "registrations");
 }
 
 module.exports = {

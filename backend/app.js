@@ -7,6 +7,16 @@ const { notFound, errorHandler } = require("./middleware/errorHandler");
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
+const userRoutes = require("./routes/userRoutes");
+const submissionRoutes = require("./routes/submissionRoutes");
+const evaluationRoutes = require("./routes/evaluationRoutes");
+const rankingRoutes = require("./routes/rankingRoutes");
+const scheduleRoutes = require("./routes/scheduleRoutes");
+const announcementRoutes = require("./routes/announcementRoutes");
+const resourceRoutes = require("./routes/resourceRoutes");
+const settingsRoutes = require("./routes/settingsRoutes");
+const reportRoutes = require("./routes/reportRoutes");
+const auditLogRoutes = require("./routes/auditLogRoutes");
 
 const app = express();
 
@@ -19,6 +29,16 @@ app.get("/health", (req, res) => res.json({ status: "ok" }));
 app.use("/auth", authRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/registrations", registrationRoutes);
+app.use("/users", userRoutes);
+app.use("/submissions", submissionRoutes);
+app.use("/evaluations", evaluationRoutes);
+app.use("/ranking", rankingRoutes);
+app.use("/schedule", scheduleRoutes);
+app.use("/announcements", announcementRoutes);
+app.use("/resources", resourceRoutes);
+app.use("/settings", settingsRoutes);
+app.use("/reports", reportRoutes);
+app.use("/audit-logs", auditLogRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

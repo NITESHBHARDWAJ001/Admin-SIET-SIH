@@ -5,6 +5,18 @@ import LoginPage from "./pages/auth/LoginPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import RegistrationListPage from "./pages/registration/RegistrationListPage";
 import TeamProfilePage from "./pages/registration/TeamProfilePage";
+import SubmissionsPage from "./pages/submissions/SubmissionsPage";
+import JudgesPage from "./pages/judges/JudgesPage";
+import JudgeDetailPage from "./pages/judges/JudgeDetailPage";
+import EvaluationPage from "./pages/evaluation/EvaluationPage";
+import RankingPage from "./pages/ranking/RankingPage";
+import SchedulePage from "./pages/schedule/SchedulePage";
+import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
+import ResourcesPage from "./pages/resources/ResourcesPage";
+import SettingsPage from "./pages/settings/SettingsPage";
+import ReportsPage from "./pages/reports/ReportsPage";
+import AnalyticsPage from "./pages/analytics/AnalyticsPage";
+import AuditLogsPage from "./pages/auditlogs/AuditLogsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { useAuth } from "./hooks/useAuth";
 
@@ -25,6 +37,18 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/registrations" element={<RegistrationListPage />} />
           <Route path="/registrations/:id" element={<TeamProfilePage />} />
+          <Route path="/submissions" element={<SubmissionsPage />} />
+          <Route path="/judges" element={<JudgesPage />} />
+          <Route path="/judges/:id" element={<JudgeDetailPage />} />
+          <Route path="/evaluation" element={<EvaluationPage />} />
+          <Route path="/ranking" element={<RankingPage />} />
+          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/announcements" element={<AnnouncementsPage />} />
+          <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/audit-logs" element={<AuditLogsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
 
