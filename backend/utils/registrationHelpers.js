@@ -1,0 +1,45 @@
+function departmentOf(team) {
+  const branch = team.teamLeaderBranchSection || "";
+  return branch.split("-")[0] || branch;
+}
+
+function memberCount(team) {
+  let count = 1; // leader
+  for (let n = 2; n <= 6; n++) {
+    if (team[`member${n}FullName`]) count += 1;
+  }
+  return count;
+}
+
+function toListItem(team) {
+  return {
+    id: team.id,
+    teamId: team.teamId,
+    teamName: team.teamName,
+    leader: team.teamLeaderFullName,
+    department: departmentOf(team),
+    year: team.teamLeaderYear,
+    registrationTime: team.timestamp,
+    status: team.status,
+    memberCount: memberCount(team),
+    judgeAssigned: team.judgeAssigned || null,
+    presentationSlot: team.presentationSlot || null,
+    rankingStatus: team.rankingStatus || null,
+  };
+}
+
+const EXPORT_COLUMNS = [
+  { key: "teamId", label: "Team ID" },
+  { key: "teamName", label: "Team Name" },
+  { key: "teamLeaderFullName", label: "Leader Name" },
+  { key: "teamLeaderRollNumber", label: "Leader Roll Number" },
+  { key: "teamLeaderBranchSection", label: "Branch and Section" },
+  { key: "teamLeaderYear", label: "Year" },
+  { key: "teamLeaderGender", label: "Gender" },
+  { key: "teamLeaderPhoneNumber", label: "Phone Number" },
+  { key: "teamLeaderEmailAddress", label: "Email Address" },
+  { key: "status", label: "Status" },
+  { key: "timestamp", label: "Registration Time" },
+];
+
+module.exports = { departmentOf, memberCount, toListItem, EXPORT_COLUMNS };

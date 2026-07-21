@@ -1,0 +1,31 @@
+import {
+  FiGrid,
+  FiUsers,
+  FiUpload,
+  FiAward,
+  FiCheckSquare,
+  FiBarChart2,
+  FiCalendar,
+  FiBell,
+  FiFolder,
+  FiSettings,
+  FiFileText,
+  FiPieChart,
+  FiClipboard,
+} from "react-icons/fi";
+
+export const NAV_ITEMS = [
+  { label: "Dashboard", to: "/dashboard", icon: FiGrid, available: true },
+  { label: "Registrations", to: "/registrations", icon: FiUsers, available: true },
+  { label: "Submissions", to: "/submissions", icon: FiUpload, available: false },
+  { label: "Judges", to: "/judges", icon: FiAward, available: false },
+  { label: "Evaluation", to: "/evaluation", icon: FiCheckSquare, available: false },
+  { label: "Ranking", to: "/ranking", icon: FiBarChart2, available: false },
+  { label: "Presentation Schedule", to: "/schedule", icon: FiCalendar, available: false },
+  { label: "Announcements", to: "/announcements", icon: FiBell, available: false },
+  { label: "Resources", to: "/resources", icon: FiFolder, available: false },
+  { label: "Reports", to: "/reports", icon: FiFileText, available: false },
+  { label: "Analytics", to: "/analytics", icon: FiPieChart, available: false },
+  { label: "Audit Logs", to: "/audit-logs", icon: FiClipboard, available: false },
+  { label: "Settings", to: "/settings", icon: FiSettings, available: false },
+];
