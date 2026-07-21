@@ -4,6 +4,7 @@ import {
   FiSearch,
   FiRefreshCw,
   FiDownload,
+  FiUploadCloud,
   FiChevronLeft,
   FiChevronRight,
   FiChevronUp,
@@ -19,6 +20,7 @@ import StatusBadge from "../../components/StatusBadge";
 import { SkeletonTable } from "../../components/Skeleton";
 import EmptyState from "../../components/EmptyState";
 import { fetchRegistrations, downloadExport } from "../../services/registrationApi";
+import { syncRegistrationForm } from "../../services/syncApi";
 import { DEPARTMENTS, YEARS, GENDERS, STATUSES } from "../../constants/registration";
 import { formatDateTime } from "../../utils/formatters";
 
@@ -30,11 +32,13 @@ export default function RegistrationListPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ department: "", year: "", gender: "", status: "" });
   const [sort, setSort] = useState({ sortBy: "timestamp", sortDir: "desc" });
   const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const handle = setTimeout(() => setPage(1), 0);
@@ -65,7 +69,7 @@ export default function RegistrationListPage() {
     return () => {
       active = false;
     };
-  }, [search, filters, sort, page]);
+  }, [search, filters, sort, page, refreshKey]);
 
   const columns = useMemo(
     () => [
@@ -104,6 +108,23 @@ export default function RegistrationListPage() {
     );
   };
 
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const result = await syncRegistrationForm();
+      if (result.imported > 0) {
+        toast.success(`Imported ${result.imported} new registration(s)`);
+        setRefreshKey((k) => k + 1);
+      } else {
+        toast.success("No new form responses to import");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const handleExport = async (format) => {
     setExporting(true);
     try {
@@ -125,10 +146,14 @@ export default function RegistrationListPage() {
           <h1 className="font-heading text-xl font-semibold text-ink">Registration Management</h1>
           <p className="text-sm text-slate-500">{total} teams registered</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="btn-secondary" onClick={() => setPage((p) => p)} disabled={loading}>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button className="btn-secondary" onClick={() => setRefreshKey((k) => k + 1)} disabled={loading}>
             <FiRefreshCw className={loading ? "animate-spin" : ""} size={15} />
             Refresh
+          </button>
+          <button className="btn-secondary" onClick={handleSync} disabled={syncing}>
+            <FiUploadCloud className={syncing ? "animate-pulse" : ""} size={15} />
+            {syncing ? "Syncing…" : "Sync from Form"}
           </button>
           <button className="btn-secondary" onClick={() => handleExport("csv")} disabled={exporting}>
             <FiDownload size={15} /> CSV

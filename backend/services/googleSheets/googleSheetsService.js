@@ -159,4 +159,17 @@ async function deleteRow(sheetName, id) {
   return true;
 }
 
-module.exports = { getRows, getRowById, appendRow, updateRow, deleteRow };
+// Reads an arbitrary sheet by name (e.g. a Google Form's linked response
+// tab) without requiring it to be declared in schema.js — returns the raw
+// header row and data rows as-is, positional, no key mapping.
+async function getRawSheet(sheetName) {
+  const sheets = getSheetsClient();
+  const { data } = await sheets.spreadsheets.values.get({
+    spreadsheetId: config.google.spreadsheetId,
+    range: `${sheetName}!A1:ZZ`,
+  });
+  const [header, ...rows] = data.values || [[]];
+  return { header: header || [], rows };
+}
+
+module.exports = { getRows, getRowById, appendRow, updateRow, deleteRow, getRawSheet };

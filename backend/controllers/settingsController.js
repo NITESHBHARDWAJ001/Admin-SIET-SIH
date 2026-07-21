@@ -10,6 +10,8 @@ const DEFAULTS = {
   registrationFormUrl: "",
   submissionFormUrl: "",
   importantDates: "[]",
+  formResponsesSheetName: "Form Responses 1",
+  lastSyncedFormRow: "0",
 };
 
 async function getSettings(req, res) {

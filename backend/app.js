@@ -17,6 +17,8 @@ const resourceRoutes = require("./routes/resourceRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const auditLogRoutes = require("./routes/auditLogRoutes");
+const syncRoutes = require("./routes/syncRoutes");
+const publicRoutes = require("./routes/publicRoutes");
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.use("/resources", resourceRoutes);
 app.use("/settings", settingsRoutes);
 app.use("/reports", reportRoutes);
 app.use("/audit-logs", auditLogRoutes);
+app.use("/sync", syncRoutes);
+app.use("/public", publicRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

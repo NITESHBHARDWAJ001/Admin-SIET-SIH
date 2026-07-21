@@ -42,4 +42,13 @@ const EXPORT_COLUMNS = [
   { key: "timestamp", label: "Registration Time" },
 ];
 
-module.exports = { departmentOf, memberCount, toListItem, EXPORT_COLUMNS };
+function nextTeamId(existingTeams) {
+  let max = 0;
+  existingTeams.forEach((t) => {
+    const match = /^SIH26-(\d+)$/.exec(t.teamId || "");
+    if (match) max = Math.max(max, Number(match[1]));
+  });
+  return `SIH26-${String(max + 1).padStart(3, "0")}`;
+}
+
+module.exports = { departmentOf, memberCount, toListItem, EXPORT_COLUMNS, nextTeamId };

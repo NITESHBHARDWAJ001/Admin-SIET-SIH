@@ -35,4 +35,8 @@ async function deleteRow(sheetName, id) {
   return true;
 }
 
-module.exports = { getRows, getRowById, appendRow, updateRow, deleteRow };
+async function getRawSheet() {
+  throw new Error("Form response sync is only available against a real Google Sheet");
+}
+
+module.exports = { getRows, getRowById, appendRow, updateRow, deleteRow, getRawSheet };

@@ -85,6 +85,15 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        <div>
+          <label className="text-xs text-slate-400">Google Form Response Tab Name</label>
+          <input className="input mt-1" {...register("formResponsesSheetName")} />
+          <p className="text-xs text-slate-400 mt-1">
+            The tab name Google created when you linked the Registration form's responses to this
+            spreadsheet (usually "Form Responses 1"). Used by "Sync from Form" on the Registrations page.
+          </p>
+        </div>
+
         <button className="btn-primary" disabled={isSubmitting}>
           {isSubmitting ? "Saving…" : "Save Settings"}
         </button>
