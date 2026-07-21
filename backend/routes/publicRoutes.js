@@ -4,14 +4,25 @@ const {
   getPublicSettings,
   listPublicAnnouncements,
   createPublicRegistration,
+  lookupPublicTeam,
+  createOrUpdatePublicSubmission,
+  listPublicResources,
 } = require("../controllers/publicController");
 
 const router = express.Router();
 
-const registrationLimiter = rateLimit({
+const writeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
-  message: { message: "Too many registration attempts. Please try again later." },
+  message: { message: "Too many attempts. Please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const lookupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: "Too many lookup attempts. Please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -25,6 +36,9 @@ const readLimiter = rateLimit({
 
 router.get("/settings", readLimiter, getPublicSettings);
 router.get("/announcements", readLimiter, listPublicAnnouncements);
-router.post("/registrations", registrationLimiter, createPublicRegistration);
+router.get("/resources", readLimiter, listPublicResources);
+router.get("/teams/lookup", lookupLimiter, lookupPublicTeam);
+router.post("/registrations", writeLimiter, createPublicRegistration);
+router.post("/submissions", writeLimiter, createOrUpdatePublicSubmission);
 
 module.exports = router;

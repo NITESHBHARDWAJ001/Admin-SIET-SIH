@@ -18,8 +18,11 @@ import SettingsPage from "./pages/settings/SettingsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import AnalyticsPage from "./pages/analytics/AnalyticsPage";
 import AuditLogsPage from "./pages/auditlogs/AuditLogsPage";
+import PublicHomePage from "./pages/public/PublicHomePage";
 import PublicRegisterPage from "./pages/public/PublicRegisterPage";
+import PublicSubmitPage from "./pages/public/PublicSubmitPage";
 import PublicAnnouncementsPage from "./pages/public/PublicAnnouncementsPage";
+import PublicResourcesPage from "./pages/public/PublicResourcesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { useAuth } from "./hooks/useAuth";
 
@@ -32,10 +35,12 @@ function LoginRoute() {
 function App() {
   return (
     <Routes>
-      <Route index element={<Navigate to="/register" replace />} />
       <Route element={<PublicLayout />}>
+        <Route index element={<PublicHomePage />} />
         <Route path="/register" element={<PublicRegisterPage />} />
+        <Route path="/submit" element={<PublicSubmitPage />} />
         <Route path="/notices" element={<PublicAnnouncementsPage />} />
+        <Route path="/downloads" element={<PublicResourcesPage />} />
       </Route>
 
       <Route path="/login" element={<LoginRoute />} />

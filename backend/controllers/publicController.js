@@ -140,4 +140,94 @@ async function createPublicRegistration(req, res) {
   res.status(201).json({ data: { teamId: created.teamId, teamName: created.teamName } });
 }
 
-module.exports = { getPublicSettings, listPublicAnnouncements, createPublicRegistration };
+async function lookupPublicTeam(req, res) {
+  const query = sanitizeString(req.query.query).toLowerCase();
+  if (!query) return res.status(400).json({ message: "Enter a Team ID or leader email to search" });
+
+  const teams = await sheetsService.getRows("Registration");
+  const team = teams.find(
+    (t) =>
+      t.teamId?.toLowerCase() === query || t.teamLeaderEmailAddress?.toLowerCase() === query
+  );
+
+  if (!team) {
+    return res.status(404).json({ message: "No team found with that Team ID or email" });
+  }
+  if (team.status !== "Approved") {
+    return res.status(403).json({
+      message: `Team ${team.teamId} is ${team.status.toLowerCase()} and not yet approved to submit`,
+    });
+  }
+
+  res.json({ data: { teamId: team.teamId, teamName: team.teamName } });
+}
+
+async function createOrUpdatePublicSubmission(req, res) {
+  const submissionOpen = await getSettingValue("submissionOpen", "false");
+  if (submissionOpen !== "true") {
+    return res.status(403).json({ message: "Submissions are currently closed" });
+  }
+
+  const body = req.body || {};
+  const teamId = sanitizeString(body.teamId);
+  if (!teamId) return res.status(400).json({ message: "teamId is required" });
+
+  const teams = await sheetsService.getRows("Registration");
+  const team = teams.find((t) => t.teamId === teamId);
+  if (!team) return res.status(404).json({ message: "Team not found" });
+  if (team.status !== "Approved") {
+    return res.status(403).json({ message: "Only approved teams can submit" });
+  }
+
+  const hasAnyLink = body.githubRepository || body.ppt || body.demoVideo;
+  if (!hasAnyLink) {
+    return res.status(400).json({ message: "Provide at least one of: repository, PPT, or demo video link" });
+  }
+
+  const submissions = await sheetsService.getRows("Submission");
+  const existing = submissions.find((s) => s.teamId === teamId);
+
+  const payload = {
+    teamId,
+    teamName: team.teamName,
+    githubRepository: sanitizeString(body.githubRepository),
+    ppt: sanitizeString(body.ppt),
+    demoVideo: sanitizeString(body.demoVideo),
+    description: sanitizeString(body.description).slice(0, 1000),
+    submissionTime: new Date().toISOString(),
+    status: "Pending",
+  };
+
+  let saved;
+  if (existing) {
+    saved = await sheetsService.updateRow("Submission", existing.id, payload);
+  } else {
+    saved = await sheetsService.appendRow("Submission", { ...payload, remarks: [], createdAt: new Date().toISOString() });
+  }
+
+  await logAction(
+    { user: null, ip: req.ip },
+    existing ? "Public Submission Updated" : "Public Submission Created",
+    `${team.teamName} (${teamId})`
+  );
+
+  res.status(existing ? 200 : 201).json({ data: { teamId: saved.teamId, status: saved.status } });
+}
+
+async function listPublicResources(req, res) {
+  const resources = await sheetsService.getRows("Resources");
+  const visible = resources
+    .filter((r) => r.visible)
+    .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0))
+    .map((r) => ({ id: r.id, name: r.name, category: r.category, url: r.url }));
+  res.json({ data: visible });
+}
+
+module.exports = {
+  getPublicSettings,
+  listPublicAnnouncements,
+  createPublicRegistration,
+  lookupPublicTeam,
+  createOrUpdatePublicSubmission,
+  listPublicResources,
+};

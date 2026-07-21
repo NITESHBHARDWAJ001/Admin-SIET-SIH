@@ -18,3 +18,18 @@ export async function submitPublicRegistration(payload) {
   const { data } = await publicClient.post("/registrations", payload);
   return data.data;
 }
+
+export async function lookupPublicTeam(query) {
+  const { data } = await publicClient.get("/teams/lookup", { params: { query } });
+  return data.data;
+}
+
+export async function submitPublicSubmission(payload) {
+  const { data } = await publicClient.post("/submissions", payload);
+  return data.data;
+}
+
+export async function fetchPublicResources() {
+  const { data } = await publicClient.get("/resources");
+  return data.data;
+}
