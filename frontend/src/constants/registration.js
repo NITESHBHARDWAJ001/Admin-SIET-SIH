@@ -5,6 +5,7 @@ export const STATUS_STYLES = {
 };
 
 export const DEPARTMENTS = ["CSE", "ECE", "ME", "CE", "EE", "IT"];
+export const SECTIONS = ["A", "B", "C", "D"];
 export const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 export const GENDERS = ["Male", "Female"];
 export const STATUSES = ["Pending", "Approved", "Rejected"];
