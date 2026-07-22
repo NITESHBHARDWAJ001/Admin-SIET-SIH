@@ -8,12 +8,21 @@ function required(name, fallback) {
   return value;
 }
 
+function corsOrigin(value) {
+  const origins = (value || "http://localhost:5173,http://127.0.0.1:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return origins.length === 1 ? origins[0] : origins;
+}
+
 module.exports = {
   port: Number(process.env.PORT) || 4000,
   jwtSecret: required("JWT_SECRET", "dev-only-insecure-secret-change-me"),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "8h",
   useMockSheets: process.env.USE_MOCK_SHEETS !== "false",
-  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  corsOrigin: corsOrigin(process.env.CORS_ORIGIN),
   google: {
     serviceAccountEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || "",
     privateKey: (process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || "").replace(/\\n/g, "\n"),

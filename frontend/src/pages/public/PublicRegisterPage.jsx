@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FiPlus, FiX, FiCheckCircle } from "react-icons/fi";
 import { fetchPublicSettings, submitPublicRegistration } from "../../services/publicApi";
-import { DEPARTMENTS, SECTIONS, GENDERS, YEARS } from "../../constants/registration";
+import { BRANCH_OPTIONS, GENDERS, YEARS } from "../../constants/registration";
 import { SkeletonBlock } from "../../components/Skeleton";
 
 const MEMBER_NUMBERS = [2, 3, 4, 5, 6];
@@ -28,18 +28,6 @@ export default function PublicRegisterPage() {
 
   const onSubmit = async (values) => {
     const payload = { ...values, declaration: Boolean(values.declaration) };
-
-    payload.teamLeaderBranchSection = `${values.teamLeaderBranch}-${values.teamLeaderSection}`;
-    delete payload.teamLeaderBranch;
-    delete payload.teamLeaderSection;
-
-    for (const n of MEMBER_NUMBERS) {
-      const branch = values[`member${n}Branch`];
-      const section = values[`member${n}Section`];
-      payload[`member${n}BranchSection`] = branch ? `${branch}-${section}` : "";
-      delete payload[`member${n}Branch`];
-      delete payload[`member${n}Section`];
-    }
 
     try {
       const result = await submitPublicRegistration(payload);
@@ -111,26 +99,13 @@ export default function PublicRegisterPage() {
           </div>
           <div>
             <label className="text-xs text-slate-400">Branch *</label>
-            <select className="input mt-1" defaultValue="" {...register("teamLeaderBranch", { required: true })}>
+            <select className="input mt-1" defaultValue="" {...register("teamLeaderBranchSection", { required: true })}>
               <option value="" disabled>
                 Select branch
               </option>
-              {DEPARTMENTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-slate-400">Section *</label>
-            <select className="input mt-1" defaultValue="" {...register("teamLeaderSection", { required: true })}>
-              <option value="" disabled>
-                Select section
-              </option>
-              {SECTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              {BRANCH_OPTIONS.map((branch) => (
+                <option key={branch} value={branch}>
+                  {branch}
                 </option>
               ))}
             </select>
@@ -202,22 +177,11 @@ export default function PublicRegisterPage() {
             </div>
             <div>
               <label className="text-xs text-slate-400">Branch</label>
-              <select className="input mt-1" defaultValue="" {...register(`member${n}Branch`)}>
+              <select className="input mt-1" defaultValue="" {...register(`member${n}BranchSection`)}>
                 <option value=""></option>
-                {DEPARTMENTS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-slate-400">Section</label>
-              <select className="input mt-1" defaultValue="" {...register(`member${n}Section`)}>
-                <option value=""></option>
-                {SECTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
+                {BRANCH_OPTIONS.map((branch) => (
+                  <option key={branch} value={branch}>
+                    {branch}
                   </option>
                 ))}
               </select>

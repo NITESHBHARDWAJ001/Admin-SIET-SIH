@@ -11,6 +11,33 @@ function memberCount(team) {
   return count;
 }
 
+function normalizeGender(value) {
+  const gender = String(value || "").trim();
+  if (!gender) return "Unknown";
+
+  const lower = gender.toLowerCase();
+  if (lower === "female" || lower === "girl" || lower === "girls") return "Female";
+  if (lower === "male" || lower === "boy" || lower === "boys") return "Male";
+
+  return gender;
+}
+
+function participantGenders(team) {
+  const genders = [normalizeGender(team.teamLeaderGender)];
+
+  for (let n = 2; n <= 6; n++) {
+    if (team[`member${n}FullName`]) {
+      genders.push(normalizeGender(team[`member${n}Gender`]));
+    }
+  }
+
+  return genders;
+}
+
+function girlsCount(team) {
+  return participantGenders(team).filter((gender) => gender === "Female").length;
+}
+
 function toListItem(team) {
   return {
     id: team.id,
@@ -51,4 +78,12 @@ function nextTeamId(existingTeams) {
   return `SIH26-${String(max + 1).padStart(3, "0")}`;
 }
 
-module.exports = { departmentOf, memberCount, toListItem, EXPORT_COLUMNS, nextTeamId };
+module.exports = {
+  departmentOf,
+  memberCount,
+  participantGenders,
+  girlsCount,
+  toListItem,
+  EXPORT_COLUMNS,
+  nextTeamId,
+};

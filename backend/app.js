@@ -26,6 +26,9 @@ app.use(cors({ origin: config.corsOrigin, credentials: true }));
 app.use(express.json());
 app.use(morgan("dev"));
 
+app.get("/", (req, res) => {
+  res.json({ status: "ok", service: "SIH Admin backend", health: "/health" });
+});
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 app.use("/auth", authRoutes);

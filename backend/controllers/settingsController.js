@@ -1,26 +1,10 @@
 const sheetsService = require("../services/googleSheets/sheetsService");
 const { logAction } = require("../utils/auditLog");
-
-const DEFAULTS = {
-  registrationOpen: "true",
-  submissionOpen: "false",
-  evaluationOpen: "false",
-  resultsPublished: "false",
-  currentPhase: "Registration Open",
-  registrationFormUrl: "",
-  submissionFormUrl: "",
-  importantDates: "[]",
-  formResponsesSheetName: "Form Responses 1",
-  lastSyncedFormRow: "0",
-};
+const { settingsFromRows } = require("../utils/settingsDefaults");
 
 async function getSettings(req, res) {
   const rows = await sheetsService.getRows("Settings");
-  const settings = { ...DEFAULTS };
-  rows.forEach((row) => {
-    settings[row.key] = row.value;
-  });
-  res.json({ data: settings });
+  res.json({ data: settingsFromRows(rows) });
 }
 
 async function updateSettings(req, res) {
@@ -39,11 +23,7 @@ async function updateSettings(req, res) {
   await logAction(req, "Settings Updated", Object.keys(patch).join(", "));
 
   const updatedRows = await sheetsService.getRows("Settings");
-  const settings = { ...DEFAULTS };
-  updatedRows.forEach((row) => {
-    settings[row.key] = row.value;
-  });
-  res.json({ data: settings });
+  res.json({ data: settingsFromRows(updatedRows) });
 }
 
 module.exports = { getSettings, updateSettings };

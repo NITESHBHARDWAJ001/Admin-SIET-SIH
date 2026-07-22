@@ -117,7 +117,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="card p-5">
-          <h2 className="font-heading font-semibold text-ink mb-4">Gender Distribution</h2>
+          <h2 className="font-heading font-semibold text-ink mb-4">Participant Gender Distribution</h2>
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie
@@ -136,6 +136,19 @@ export default function DashboardPage() {
               <Tooltip />
               <Legend />
             </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="card p-5">
+          <h2 className="font-heading font-semibold text-ink mb-4">Teams by Girls Count</h2>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={charts.teamsByGirlsPresence || []}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#2DBB3C" radius={[6, 6, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
 

@@ -1,6 +1,7 @@
 const sheetsService = require("../services/googleSheets/sheetsService");
 const { logAction } = require("../utils/auditLog");
 const { nextTeamId } = require("../utils/registrationHelpers");
+const { settingsFromRows } = require("../utils/settingsDefaults");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[0-9]{10}$/;
@@ -24,8 +25,8 @@ function sanitizeString(value) {
 
 async function getSettingValue(key, fallback) {
   const rows = await sheetsService.getRows("Settings");
-  const row = rows.find((r) => r.key === key);
-  return row ? row.value : fallback;
+  const settings = settingsFromRows(rows);
+  return settings[key] ?? fallback;
 }
 
 async function getPublicSettings(req, res) {
@@ -40,10 +41,10 @@ async function getPublicSettings(req, res) {
     "submissionFormUrl",
     "importantDates",
   ];
+  const allSettings = settingsFromRows(rows);
   const settings = {};
   keys.forEach((key) => {
-    const row = rows.find((r) => r.key === key);
-    settings[key] = row ? row.value : "";
+    settings[key] = allSettings[key] ?? "";
   });
   res.json({ data: settings });
 }

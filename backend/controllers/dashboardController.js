@@ -1,5 +1,10 @@
 const sheetsService = require("../services/googleSheets/sheetsService");
-const { departmentOf, memberCount } = require("../utils/registrationHelpers");
+const {
+  departmentOf,
+  memberCount,
+  participantGenders,
+  girlsCount,
+} = require("../utils/registrationHelpers");
 
 function countBy(items, keyFn) {
   const counts = {};
@@ -29,7 +34,22 @@ async function getDashboard(req, res) {
 
   const departmentWise = countBy(teams, departmentOf);
   const yearWise = countBy(teams, (t) => t.teamLeaderYear);
-  const genderWise = countBy(teams, (t) => t.teamLeaderGender);
+  const participantGenderCounts = {};
+  teams.forEach((team) => {
+    participantGenders(team).forEach((gender) => {
+      participantGenderCounts[gender] = (participantGenderCounts[gender] || 0) + 1;
+    });
+  });
+  const genderWise = Object.entries(participantGenderCounts).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  const teamsWithGirlsLessThanOne = teams.filter((team) => girlsCount(team) < 1).length;
+  const teamsByGirlsPresence = [
+    { name: "0 Girls", value: teamsWithGirlsLessThanOne },
+    { name: "1+ Girls", value: Math.max(0, totalTeams - teamsWithGirlsLessThanOne) },
+  ];
 
   const timelineCounts = countBy(teams, (t) => (t.timestamp || "").slice(0, 10));
   const timeline = timelineCounts.sort((a, b) => (a.name < b.name ? -1 : 1));
@@ -50,6 +70,7 @@ async function getDashboard(req, res) {
       departmentWise,
       yearWise,
       genderWise,
+      teamsByGirlsPresence,
       timeline,
     },
   });
