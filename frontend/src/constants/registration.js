@@ -4,7 +4,7 @@ export const STATUS_STYLES = {
   Pending: "bg-amber-100 text-amber-700",
 };
 
-export const DEPARTMENTS = ["CSE", "ECE", "ME", "CE", "EE", "IT"];
+export const DEPARTMENTS = ["CSE", "ECE", "ME", "CE", "EE", "CSE-AIML"];
 export const SECTIONS = ["A", "B", "C", "D"];
 export const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 export const GENDERS = ["Male", "Female"];

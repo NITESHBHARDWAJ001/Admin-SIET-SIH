@@ -1,6 +1,10 @@
 function departmentOf(team) {
   const branch = team.teamLeaderBranchSection || "";
-  return branch.split("-")[0] || branch;
+  // Split on the LAST hyphen, not the first: branch codes can themselves
+  // contain a hyphen (e.g. "CSE-AIML"), so "CSE-AIML-A" must yield
+  // "CSE-AIML", not "CSE".
+  const lastDash = branch.lastIndexOf("-");
+  return lastDash === -1 ? branch : branch.slice(0, lastDash);
 }
 
 function memberCount(team) {
