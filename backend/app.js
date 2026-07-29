@@ -22,6 +22,12 @@ const publicRoutes = require("./routes/publicRoutes");
 
 const app = express();
 
+// Render (and most PaaS hosts) put the app behind a reverse proxy that sets
+// X-Forwarded-For to the real client IP. Trusting exactly one hop lets
+// express-rate-limit (in publicRoutes) key off the actual visitor instead of
+// the proxy's own IP.
+app.set("trust proxy", 1);
+
 app.use(cors({ origin: config.corsOrigin, credentials: true }));
 app.use(express.json());
 app.use(morgan("dev"));
