@@ -38,6 +38,10 @@ const REGISTRATION_FIELDS = [
   { key: "createdAt", header: "Created At" },
   { key: "updatedAt", header: "Updated At" },
   { key: "rankingStatus", header: "Ranking Status" },
+  { key: "teamPassword", header: "Team Password" },
+  { key: "selectedProblemStatementId", header: "Selected Problem Statement ID" },
+  { key: "selectedProblemStatementTitle", header: "Selected Problem Statement Title" },
+  { key: "selectionLockedAt", header: "Selection Locked At" },
 ];
 
 const USERS_FIELDS = [
@@ -135,6 +139,16 @@ const SETTINGS_FIELDS = [
   { key: "value", header: "Value" },
 ];
 
+const PROBLEM_STATEMENTS_FIELDS = [
+  { key: "id", header: "Record ID" },
+  { key: "problemId", header: "Problem ID" },
+  { key: "title", header: "Title" },
+  { key: "theme", header: "Theme" },
+  { key: "description", header: "Description" },
+  { key: "capacity", header: "Capacity" },
+  { key: "createdAt", header: "Created At" },
+];
+
 const SCHEMAS = {
   Registration: REGISTRATION_FIELDS,
   Users: USERS_FIELDS,
@@ -145,6 +159,7 @@ const SCHEMAS = {
   Announcements: ANNOUNCEMENTS_FIELDS,
   Resources: RESOURCES_FIELDS,
   Settings: SETTINGS_FIELDS,
+  ProblemStatements: PROBLEM_STATEMENTS_FIELDS,
 };
 
 module.exports = { SCHEMAS };

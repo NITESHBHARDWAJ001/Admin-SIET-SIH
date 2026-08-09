@@ -4,6 +4,8 @@ import { FiLogIn } from "react-icons/fi";
 const NAV_LINKS = [
   { to: "/register", label: "Register" },
   { to: "/submit", label: "Submit" },
+  { to: "/problem-board", label: "Problems" },
+  { to: "/select-problem", label: "Select Problem" },
   { to: "/notices", label: "Notices" },
   { to: "/downloads", label: "Resources" },
 ];

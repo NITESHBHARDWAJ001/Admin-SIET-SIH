@@ -10,6 +10,8 @@ import {
   FiX,
   FiClock,
   FiPrinter,
+  FiKey,
+  FiCopy,
 } from "react-icons/fi";
 import StatusBadge from "../../components/StatusBadge";
 import ConfirmDialog from "../../components/ConfirmDialog";
@@ -20,6 +22,7 @@ import {
   updateRegistration,
   deleteRegistration,
   addRemark,
+  generateTeamPassword,
 } from "../../services/registrationApi";
 import { formatDateTime } from "../../utils/formatters";
 import { GENDERS, YEARS } from "../../constants/registration";
@@ -55,6 +58,7 @@ export default function TeamProfilePage() {
   const [confirmAction, setConfirmAction] = useState(null);
   const [remarkText, setRemarkText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [generatingPassword, setGeneratingPassword] = useState(false);
 
   const { register, handleSubmit, reset } = useForm();
 
@@ -117,6 +121,24 @@ export default function TeamProfilePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleGeneratePassword = async () => {
+    setGeneratingPassword(true);
+    try {
+      const result = await generateTeamPassword(id);
+      setTeam((prev) => ({ ...prev, teamPassword: result.teamPassword }));
+      toast.success("Password generated");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to generate password");
+    } finally {
+      setGeneratingPassword(false);
+    }
+  };
+
+  const handleCopyPassword = () => {
+    navigator.clipboard.writeText(team.teamPassword);
+    toast.success("Password copied");
   };
 
   const handleAddRemark = async () => {
@@ -329,6 +351,56 @@ export default function TeamProfilePage() {
               <Field label="Last Updated" value={formatDateTime(team.updatedAt)} />
             </div>
           </section>
+
+          {team.status === "Approved" && (
+            <section className="card p-5 print:hidden">
+              <h2 className="font-heading font-semibold text-ink mb-4">Problem Statement Access</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-400">Team Password</p>
+                  {team.teamPassword ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <code className="text-sm font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                        {team.teamPassword}
+                      </code>
+                      <button className="btn-secondary px-2 py-1" onClick={handleCopyPassword}>
+                        <FiCopy size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400 mt-1">No password issued yet</p>
+                  )}
+                  <button
+                    className="btn-secondary mt-2"
+                    onClick={handleGeneratePassword}
+                    disabled={generatingPassword}
+                  >
+                    <FiKey size={14} />
+                    {generatingPassword
+                      ? "Generating…"
+                      : team.teamPassword
+                      ? "Regenerate Password"
+                      : "Generate Password"}
+                  </button>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400">Selected Problem Statement</p>
+                  {team.selectedProblemStatementId ? (
+                    <>
+                      <p className="text-sm text-ink dark:text-slate-100 mt-1">
+                        {team.selectedProblemStatementId}: {team.selectedProblemStatementTitle}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Locked {formatDateTime(team.selectionLockedAt)}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-slate-400 mt-1">Not selected yet</p>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
 
           <section className="card p-5 print:hidden">
             <h2 className="font-heading font-semibold text-ink mb-4">Internal Remarks</h2>

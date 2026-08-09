@@ -12,12 +12,14 @@ import {
   FiFileText,
   FiPieChart,
   FiClipboard,
+  FiHelpCircle,
 } from "react-icons/fi";
 
 export const NAV_ITEMS = [
   { label: "Dashboard", to: "/dashboard", icon: FiGrid, available: true },
   { label: "Registrations", to: "/registrations", icon: FiUsers, available: true },
   { label: "Submissions", to: "/submissions", icon: FiUpload, available: true },
+  { label: "Problem Statements", to: "/problem-statements", icon: FiHelpCircle, available: true },
   { label: "Judges", to: "/judges", icon: FiAward, available: true },
   { label: "Evaluation", to: "/evaluation", icon: FiCheckSquare, available: true },
   { label: "Ranking", to: "/ranking", icon: FiBarChart2, available: true },

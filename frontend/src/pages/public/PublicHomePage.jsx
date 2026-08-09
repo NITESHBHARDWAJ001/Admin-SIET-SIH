@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiUsers, FiUpload, FiBell, FiFolder, FiArrowRight } from "react-icons/fi";
+import { FiUsers, FiUpload, FiBell, FiFolder, FiArrowRight, FiHelpCircle } from "react-icons/fi";
 import { fetchPublicSettings } from "../../services/publicApi";
 import { SkeletonBlock } from "../../components/Skeleton";
 
@@ -16,6 +16,12 @@ const CARDS = [
     icon: FiUpload,
     title: "Submit Your Prototype",
     description: "Already registered and approved? Upload your repository, PPT and demo.",
+  },
+  {
+    to: "/problem-board",
+    icon: FiHelpCircle,
+    title: "Problem Statements",
+    description: "See every problem statement and how many slots are still open.",
   },
   {
     to: "/notices",

@@ -33,6 +33,7 @@ async function getPublicSettings(req, res) {
   const keys = [
     "registrationOpen",
     "submissionOpen",
+    "problemSelectionOpen",
     "evaluationOpen",
     "resultsPublished",
     "currentPhase",
@@ -223,6 +224,163 @@ async function listPublicResources(req, res) {
   res.json({ data: visible });
 }
 
+async function listPublicProblemStatements(req, res) {
+  const [statements, teams] = await Promise.all([
+    sheetsService.getRows("ProblemStatements"),
+    sheetsService.getRows("Registration"),
+  ]);
+
+  const counts = {};
+  teams.forEach((t) => {
+    if (t.selectedProblemStatementId) {
+      counts[t.selectedProblemStatementId] = (counts[t.selectedProblemStatementId] || 0) + 1;
+    }
+  });
+
+  const board = statements.map((p) => {
+    const taken = counts[p.problemId] || 0;
+    const capacity = Number(p.capacity) || 0;
+    return {
+      problemId: p.problemId,
+      title: p.title,
+      theme: p.theme,
+      description: p.description,
+      capacity,
+      taken,
+      remaining: Math.max(0, capacity - taken),
+      full: taken >= capacity,
+    };
+  });
+
+  res.json({ data: board });
+}
+
+async function findTeamByCredentials(teamId, password) {
+  const teams = await sheetsService.getRows("Registration");
+  const team = teams.find((t) => t.teamId?.toLowerCase() === sanitizeString(teamId).toLowerCase());
+  if (!team) return { error: { status: 404, message: "No team found with that Team ID" } };
+  if (team.status !== "Approved") {
+    return { error: { status: 403, message: "Only approved teams can select a problem statement" } };
+  }
+  if (!team.teamPassword) {
+    return { error: { status: 403, message: "No password has been issued for this team yet" } };
+  }
+  if (team.teamPassword !== password) {
+    return { error: { status: 401, message: "Incorrect password" } };
+  }
+  return { team };
+}
+
+async function authenticateTeamForSelection(req, res) {
+  const problemSelectionOpen = await getSettingValue("problemSelectionOpen", "false");
+  if (problemSelectionOpen !== "true") {
+    return res.status(403).json({ message: "Problem statement selection is currently closed" });
+  }
+
+  const { teamId, password } = req.body || {};
+  if (!teamId || !password) {
+    return res.status(400).json({ message: "Team ID and password are required" });
+  }
+
+  const { team, error } = await findTeamByCredentials(teamId, password);
+  if (error) return res.status(error.status).json({ message: error.message });
+
+  if (team.selectedProblemStatementId) {
+    return res.json({
+      data: {
+        teamId: team.teamId,
+        teamName: team.teamName,
+        locked: true,
+        selection: {
+          problemId: team.selectedProblemStatementId,
+          title: team.selectedProblemStatementTitle,
+          lockedAt: team.selectionLockedAt,
+        },
+      },
+    });
+  }
+
+  const statements = await sheetsService.getRows("ProblemStatements");
+  const allTeams = await sheetsService.getRows("Registration");
+  const counts = {};
+  allTeams.forEach((t) => {
+    if (t.selectedProblemStatementId) {
+      counts[t.selectedProblemStatementId] = (counts[t.selectedProblemStatementId] || 0) + 1;
+    }
+  });
+
+  const available = statements
+    .map((p) => {
+      const taken = counts[p.problemId] || 0;
+      const capacity = Number(p.capacity) || 0;
+      return {
+        problemId: p.problemId,
+        title: p.title,
+        theme: p.theme,
+        description: p.description,
+        capacity,
+        remaining: Math.max(0, capacity - taken),
+      };
+    })
+    .filter((p) => p.remaining > 0);
+
+  res.json({
+    data: { teamId: team.teamId, teamName: team.teamName, locked: false, available },
+  });
+}
+
+async function selectProblemStatement(req, res) {
+  const problemSelectionOpen = await getSettingValue("problemSelectionOpen", "false");
+  if (problemSelectionOpen !== "true") {
+    return res.status(403).json({ message: "Problem statement selection is currently closed" });
+  }
+
+  const { teamId, password, problemId } = req.body || {};
+  if (!teamId || !password || !problemId) {
+    return res.status(400).json({ message: "Team ID, password and problemId are required" });
+  }
+
+  const { team, error } = await findTeamByCredentials(teamId, password);
+  if (error) return res.status(error.status).json({ message: error.message });
+
+  if (team.selectedProblemStatementId) {
+    return res.status(409).json({
+      message: `Your team has already selected ${team.selectedProblemStatementTitle}. Selection is one-time only.`,
+    });
+  }
+
+  const statements = await sheetsService.getRows("ProblemStatements");
+  const statement = statements.find((p) => p.problemId === problemId);
+  if (!statement) return res.status(404).json({ message: "Problem statement not found" });
+
+  const allTeams = await sheetsService.getRows("Registration");
+  const taken = allTeams.filter((t) => t.selectedProblemStatementId === problemId).length;
+  const capacity = Number(statement.capacity) || 0;
+  if (taken >= capacity) {
+    return res.status(409).json({ message: "This problem statement just filled up. Please pick another." });
+  }
+
+  const lockedAt = new Date().toISOString();
+  const updated = await sheetsService.updateRow("Registration", team.id, {
+    selectedProblemStatementId: statement.problemId,
+    selectedProblemStatementTitle: statement.title,
+    selectionLockedAt: lockedAt,
+  });
+
+  await logAction(
+    { user: null, ip: req.ip },
+    "Problem Statement Selected",
+    `${team.teamName} (${team.teamId}) -> ${statement.problemId}: ${statement.title}`
+  );
+
+  res.json({
+    data: {
+      teamId: updated.teamId,
+      selection: { problemId: statement.problemId, title: statement.title, lockedAt },
+    },
+  });
+}
+
 module.exports = {
   getPublicSettings,
   listPublicAnnouncements,
@@ -230,4 +388,7 @@ module.exports = {
   lookupPublicTeam,
   createOrUpdatePublicSubmission,
   listPublicResources,
+  listPublicProblemStatements,
+  authenticateTeamForSelection,
+  selectProblemStatement,
 };

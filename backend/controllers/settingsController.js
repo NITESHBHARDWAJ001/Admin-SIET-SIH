@@ -4,6 +4,7 @@ const { logAction } = require("../utils/auditLog");
 const DEFAULTS = {
   registrationOpen: "true",
   submissionOpen: "false",
+  problemSelectionOpen: "false",
   evaluationOpen: "false",
   resultsPublished: "false",
   currentPhase: "Registration Open",

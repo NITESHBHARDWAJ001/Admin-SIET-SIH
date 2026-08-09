@@ -24,6 +24,11 @@ export async function deleteRegistration(id) {
   await apiClient.delete(`/registrations/${id}`);
 }
 
+export async function generateTeamPassword(id) {
+  const { data } = await apiClient.post(`/registrations/${id}/generate-password`);
+  return data.data;
+}
+
 export async function downloadExport(format, params = {}) {
   const response = await apiClient.get("/registrations/export", {
     params: { ...params, format },

@@ -33,3 +33,18 @@ export async function fetchPublicResources() {
   const { data } = await publicClient.get("/resources");
   return data.data;
 }
+
+export async function fetchPublicProblemStatements() {
+  const { data } = await publicClient.get("/problem-statements");
+  return data.data;
+}
+
+export async function authenticateTeamForSelection(teamId, password) {
+  const { data } = await publicClient.post("/problem-statements/auth", { teamId, password });
+  return data.data;
+}
+
+export async function selectProblemStatement(teamId, password, problemId) {
+  const { data } = await publicClient.post("/problem-statements/select", { teamId, password, problemId });
+  return data.data;
+}

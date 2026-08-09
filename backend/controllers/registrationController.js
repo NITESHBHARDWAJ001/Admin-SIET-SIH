@@ -1,6 +1,7 @@
 const sheetsService = require("../services/googleSheets/sheetsService");
 const { logAction } = require("../utils/auditLog");
 const { sendExport } = require("../utils/exportUtil");
+const { generateTeamPassword } = require("../utils/passwordGenerator");
 const {
   departmentOf,
   toListItem,
@@ -167,6 +168,35 @@ async function exportRegistrations(req, res) {
   await sendExport(res, teams, EXPORT_COLUMNS, format, "registrations");
 }
 
+async function generatePassword(req, res) {
+  const team = await sheetsService.getRowById("Registration", req.params.id);
+  if (!team) return res.status(404).json({ message: "Team not found" });
+  if (team.status !== "Approved") {
+    return res.status(403).json({ message: "Only approved teams can have an access password" });
+  }
+
+  const teamPassword = generateTeamPassword();
+  const updated = await sheetsService.updateRow("Registration", req.params.id, { teamPassword });
+
+  await logAction(req, "Team Password Generated", `${updated.teamName} (${updated.teamId})`);
+  res.json({ data: { teamId: updated.teamId, teamPassword } });
+}
+
+async function bulkGeneratePasswords(req, res) {
+  const teams = await sheetsService.getRows("Registration");
+  const targets = teams.filter((t) => t.status === "Approved" && !t.teamPassword);
+
+  const generated = [];
+  for (const team of targets) {
+    const teamPassword = generateTeamPassword();
+    await sheetsService.updateRow("Registration", team.id, { teamPassword });
+    generated.push({ teamId: team.teamId, teamName: team.teamName, teamPassword });
+  }
+
+  await logAction(req, "Bulk Team Passwords Generated", `${generated.length} team(s)`);
+  res.json({ data: generated });
+}
+
 module.exports = {
   listRegistrations,
   getRegistration,
@@ -174,4 +204,6 @@ module.exports = {
   addRemark,
   deleteRegistration,
   exportRegistrations,
+  generatePassword,
+  bulkGeneratePasswords,
 };
