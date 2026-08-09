@@ -38,6 +38,12 @@ const REGISTRATION_FIELDS = [
   { key: "createdAt", header: "Created At" },
   { key: "updatedAt", header: "Updated At" },
   { key: "rankingStatus", header: "Ranking Status" },
+  { key: "teamLeaderGithubUsername", header: "Team Leader GitHub Username" },
+  { key: "member2GithubUsername", header: "Member 2 GitHub Username" },
+  { key: "member3GithubUsername", header: "Member 3 GitHub Username" },
+  { key: "member4GithubUsername", header: "Member 4 GitHub Username" },
+  { key: "member5GithubUsername", header: "Member 5 GitHub Username" },
+  { key: "member6GithubUsername", header: "Member 6 GitHub Username" },
 ];
 
 const USERS_FIELDS = [
@@ -135,6 +141,26 @@ const SETTINGS_FIELDS = [
   { key: "value", header: "Value" },
 ];
 
+const REPOSITORIES_FIELDS = [
+  { key: "id", header: "Record ID" },
+  { key: "teamId", header: "Team ID" },
+  { key: "teamName", header: "Team Name" },
+  { key: "repoName", header: "Repository Name" },
+  { key: "repoUrl", header: "Repository URL" },
+  { key: "repoId", header: "Repository ID" },
+  { key: "owner", header: "GitHub Owner" },
+  { key: "status", header: "Repository Status" },
+  { key: "lockStatus", header: "Lock Status" },
+  { key: "collaborators", header: "Collaborators" },
+  { key: "commitCount", header: "Commit Count" },
+  { key: "lastCommitTime", header: "Last Commit Time" },
+  { key: "lastCommitBy", header: "Last Commit By" },
+  { key: "repoSize", header: "Repository Size" },
+  { key: "lastSync", header: "Last Sync" },
+  { key: "createdDate", header: "Created Date" },
+  { key: "updatedAt", header: "Updated At" },
+];
+
 const SCHEMAS = {
   Registration: REGISTRATION_FIELDS,
   Users: USERS_FIELDS,
@@ -145,6 +171,7 @@ const SCHEMAS = {
   Announcements: ANNOUNCEMENTS_FIELDS,
   Resources: RESOURCES_FIELDS,
   Settings: SETTINGS_FIELDS,
+  Repositories: REPOSITORIES_FIELDS,
 };
 
 module.exports = { SCHEMAS };

@@ -7,6 +7,8 @@ const {
   lookupPublicTeam,
   createOrUpdatePublicSubmission,
   listPublicResources,
+  lookupTeamMembers,
+  saveTeamGithubUsernames,
 } = require("../controllers/publicController");
 
 const router = express.Router();
@@ -38,6 +40,8 @@ router.get("/settings", readLimiter, getPublicSettings);
 router.get("/announcements", readLimiter, listPublicAnnouncements);
 router.get("/resources", readLimiter, listPublicResources);
 router.get("/teams/lookup", lookupLimiter, lookupPublicTeam);
+router.get("/teams/:teamId/members", lookupLimiter, lookupTeamMembers);
+router.patch("/teams/:teamId/github", writeLimiter, saveTeamGithubUsernames);
 router.post("/registrations", writeLimiter, createPublicRegistration);
 router.post("/submissions", writeLimiter, createOrUpdatePublicSubmission);
 

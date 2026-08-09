@@ -15,6 +15,7 @@ export default function SettingsPage() {
           ...data,
           registrationOpen: data.registrationOpen === "true",
           submissionOpen: data.submissionOpen === "true",
+          githubLinkOpen: data.githubLinkOpen === "true",
           evaluationOpen: data.evaluationOpen === "true",
           resultsPublished: data.resultsPublished === "true",
         });
@@ -53,6 +54,7 @@ export default function SettingsPage() {
           {[
             ["registrationOpen", "Registration Open"],
             ["submissionOpen", "Submission Open"],
+            ["githubLinkOpen", "GitHub Linking Open"],
             ["evaluationOpen", "Evaluation Open"],
             ["resultsPublished", "Results Published"],
           ].map(([key, label]) => (

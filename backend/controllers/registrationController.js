@@ -16,6 +16,7 @@ const EDITABLE_FIELDS = [
   "teamLeaderGender",
   "teamLeaderPhoneNumber",
   "teamLeaderEmailAddress",
+  "teamLeaderGithubUsername",
   "status",
   "judgeAssigned",
   "presentationSlot",
@@ -28,7 +29,8 @@ for (let n = 2; n <= 6; n++) {
     `member${n}BranchSection`,
     `member${n}Year`,
     `member${n}Gender`,
-    `member${n}EmailAddress`
+    `member${n}EmailAddress`,
+    `member${n}GithubUsername`
   );
 }
 

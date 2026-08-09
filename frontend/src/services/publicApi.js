@@ -33,3 +33,13 @@ export async function fetchPublicResources() {
   const { data } = await publicClient.get("/resources");
   return data.data;
 }
+
+export async function fetchTeamMembers(teamId) {
+  const { data } = await publicClient.get(`/teams/${encodeURIComponent(teamId)}/members`);
+  return data.data;
+}
+
+export async function saveTeamGithubUsernames(teamId, payload) {
+  const { data } = await publicClient.patch(`/teams/${encodeURIComponent(teamId)}/github`, payload);
+  return data.data;
+}

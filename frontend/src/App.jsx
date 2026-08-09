@@ -7,6 +7,8 @@ import DashboardPage from "./pages/dashboard/DashboardPage";
 import RegistrationListPage from "./pages/registration/RegistrationListPage";
 import TeamProfilePage from "./pages/registration/TeamProfilePage";
 import SubmissionsPage from "./pages/submissions/SubmissionsPage";
+import RepositoriesPage from "./pages/repositories/RepositoriesPage";
+import RepositoryDetailPage from "./pages/repositories/RepositoryDetailPage";
 import JudgesPage from "./pages/judges/JudgesPage";
 import JudgeDetailPage from "./pages/judges/JudgeDetailPage";
 import EvaluationPage from "./pages/evaluation/EvaluationPage";
@@ -23,6 +25,7 @@ import PublicRegisterPage from "./pages/public/PublicRegisterPage";
 import PublicSubmitPage from "./pages/public/PublicSubmitPage";
 import PublicAnnouncementsPage from "./pages/public/PublicAnnouncementsPage";
 import PublicResourcesPage from "./pages/public/PublicResourcesPage";
+import PublicLinkGithubPage from "./pages/public/PublicLinkGithubPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { useAuth } from "./hooks/useAuth";
 
@@ -41,6 +44,7 @@ function App() {
         <Route path="/submit" element={<PublicSubmitPage />} />
         <Route path="/notices" element={<PublicAnnouncementsPage />} />
         <Route path="/downloads" element={<PublicResourcesPage />} />
+        <Route path="/link-github" element={<PublicLinkGithubPage />} />
       </Route>
 
       <Route path="/login" element={<LoginRoute />} />
@@ -51,6 +55,8 @@ function App() {
           <Route path="/registrations" element={<RegistrationListPage />} />
           <Route path="/registrations/:id" element={<TeamProfilePage />} />
           <Route path="/submissions" element={<SubmissionsPage />} />
+          <Route path="/repositories" element={<RepositoriesPage />} />
+          <Route path="/repositories/:teamId" element={<RepositoryDetailPage />} />
           <Route path="/judges" element={<JudgesPage />} />
           <Route path="/judges/:id" element={<JudgeDetailPage />} />
           <Route path="/evaluation" element={<EvaluationPage />} />

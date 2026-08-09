@@ -4,6 +4,8 @@ const { nextTeamId } = require("../utils/registrationHelpers");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[0-9]{10}$/;
+const GITHUB_USERNAME_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
+const MEMBER_NUMBERS = [2, 3, 4, 5, 6];
 
 const REQUIRED_LEADER_FIELDS = [
   "teamName",
@@ -33,6 +35,7 @@ async function getPublicSettings(req, res) {
   const keys = [
     "registrationOpen",
     "submissionOpen",
+    "githubLinkOpen",
     "evaluationOpen",
     "resultsPublished",
     "currentPhase",
@@ -223,6 +226,93 @@ async function listPublicResources(req, res) {
   res.json({ data: visible });
 }
 
+async function lookupTeamMembers(req, res) {
+  const githubLinkOpen = await getSettingValue("githubLinkOpen", "true");
+  if (githubLinkOpen !== "true") {
+    return res.status(403).json({ message: "GitHub account linking is currently closed" });
+  }
+
+  const teamId = sanitizeString(req.params.teamId);
+  if (!teamId) return res.status(400).json({ message: "Team ID is required" });
+
+  const teams = await sheetsService.getRows("Registration");
+  const team = teams.find((t) => t.teamId.toLowerCase() === teamId.toLowerCase());
+
+  if (!team) return res.status(404).json({ message: "No team found with that Team ID" });
+  if (team.status !== "Approved") {
+    return res.status(403).json({
+      message: `Team ${team.teamId} is ${team.status.toLowerCase()} and not yet approved for repository setup`,
+    });
+  }
+
+  const members = [
+    {
+      role: "Leader",
+      fullName: team.teamLeaderFullName,
+      rollNumber: team.teamLeaderRollNumber,
+      githubUsername: team.teamLeaderGithubUsername || "",
+      fieldKey: "teamLeaderGithubUsername",
+    },
+  ];
+
+  MEMBER_NUMBERS.forEach((n) => {
+    if (team[`member${n}FullName`]) {
+      members.push({
+        role: `Member ${n}`,
+        fullName: team[`member${n}FullName`],
+        rollNumber: team[`member${n}RollNumber`],
+        githubUsername: team[`member${n}GithubUsername`] || "",
+        fieldKey: `member${n}GithubUsername`,
+      });
+    }
+  });
+
+  res.json({ data: { teamId: team.teamId, teamName: team.teamName, members } });
+}
+
+async function saveTeamGithubUsernames(req, res) {
+  const githubLinkOpen = await getSettingValue("githubLinkOpen", "true");
+  if (githubLinkOpen !== "true") {
+    return res.status(403).json({ message: "GitHub account linking is currently closed" });
+  }
+
+  const teamId = sanitizeString(req.params.teamId);
+  const body = req.body || {};
+
+  const teams = await sheetsService.getRows("Registration");
+  const team = teams.find((t) => t.teamId.toLowerCase() === teamId.toLowerCase());
+
+  if (!team) return res.status(404).json({ message: "Team not found" });
+  if (team.status !== "Approved") {
+    return res.status(403).json({ message: "Only approved teams can set up a repository" });
+  }
+
+  const validKeys = ["teamLeaderGithubUsername", ...MEMBER_NUMBERS.map((n) => `member${n}GithubUsername`)];
+  const patch = {};
+
+  for (const key of validKeys) {
+    if (!Object.prototype.hasOwnProperty.call(body, key)) continue;
+    const value = sanitizeString(body[key]);
+    if (value && !GITHUB_USERNAME_RE.test(value)) {
+      return res.status(400).json({ message: `"${value}" is not a valid GitHub username` });
+    }
+    patch[key] = value;
+  }
+
+  if (Object.keys(patch).length === 0) {
+    return res.status(400).json({ message: "No GitHub usernames provided" });
+  }
+
+  const updated = await sheetsService.updateRow("Registration", team.id, patch);
+  await logAction(
+    { user: null, ip: req.ip },
+    "GitHub Usernames Linked",
+    `${team.teamName} (${team.teamId})`
+  );
+
+  res.json({ data: { teamId: updated.teamId, teamName: updated.teamName } });
+}
+
 module.exports = {
   getPublicSettings,
   listPublicAnnouncements,
@@ -230,4 +320,6 @@ module.exports = {
   lookupPublicTeam,
   createOrUpdatePublicSubmission,
   listPublicResources,
+  lookupTeamMembers,
+  saveTeamGithubUsernames,
 };

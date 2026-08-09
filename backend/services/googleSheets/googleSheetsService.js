@@ -23,7 +23,7 @@ function colLetter(index) {
 }
 
 function cellToValue(raw, key) {
-  if (key === "remarks") {
+  if (key === "remarks" || key === "collaborators") {
     if (!raw) return [];
     try {
       return JSON.parse(raw);
@@ -38,7 +38,7 @@ function cellToValue(raw, key) {
 }
 
 function valueToCell(value, key) {
-  if (key === "remarks") return JSON.stringify(value || []);
+  if (key === "remarks" || key === "collaborators") return JSON.stringify(value || []);
   if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
   if (value === null || value === undefined) return "";
   return value;

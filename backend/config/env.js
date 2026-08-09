@@ -19,4 +19,7 @@ module.exports = {
     privateKey: (process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
     spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID || "",
   },
+  github: {
+    token: process.env.GITHUB_TOKEN || "",
+  },
 };

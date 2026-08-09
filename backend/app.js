@@ -19,6 +19,7 @@ const reportRoutes = require("./routes/reportRoutes");
 const auditLogRoutes = require("./routes/auditLogRoutes");
 const syncRoutes = require("./routes/syncRoutes");
 const publicRoutes = require("./routes/publicRoutes");
+const repositoryRoutes = require("./routes/repositoryRoutes");
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use("/reports", reportRoutes);
 app.use("/audit-logs", auditLogRoutes);
 app.use("/sync", syncRoutes);
 app.use("/public", publicRoutes);
+app.use("/repositories", repositoryRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
