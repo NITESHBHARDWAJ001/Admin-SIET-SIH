@@ -29,6 +29,11 @@ export async function generateTeamPassword(id) {
   return data.data;
 }
 
+export async function bulkGenerateTeamPasswords() {
+  const { data } = await apiClient.post("/registrations/generate-passwords");
+  return data.data;
+}
+
 export async function downloadExport(format, params = {}) {
   const response = await apiClient.get("/registrations/export", {
     params: { ...params, format },

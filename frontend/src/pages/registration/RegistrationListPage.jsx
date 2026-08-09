@@ -5,6 +5,7 @@ import {
   FiRefreshCw,
   FiDownload,
   FiUploadCloud,
+  FiKey,
   FiChevronLeft,
   FiChevronRight,
   FiChevronUp,
@@ -19,7 +20,7 @@ import {
 import StatusBadge from "../../components/StatusBadge";
 import { SkeletonTable } from "../../components/Skeleton";
 import EmptyState from "../../components/EmptyState";
-import { fetchRegistrations, downloadExport } from "../../services/registrationApi";
+import { fetchRegistrations, downloadExport, bulkGenerateTeamPasswords } from "../../services/registrationApi";
 import { syncRegistrationForm } from "../../services/syncApi";
 import { DEPARTMENTS, YEARS, GENDERS, STATUSES } from "../../constants/registration";
 import { formatDateTime } from "../../utils/formatters";
@@ -33,6 +34,7 @@ export default function RegistrationListPage() {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [generatingPasswords, setGeneratingPasswords] = useState(false);
 
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ department: "", year: "", gender: "", status: "" });
@@ -125,6 +127,23 @@ export default function RegistrationListPage() {
     }
   };
 
+  const handleBulkGeneratePasswords = async () => {
+    setGeneratingPasswords(true);
+    try {
+      const generated = await bulkGenerateTeamPasswords();
+      if (generated.length > 0) {
+        toast.success(`Generated passwords for ${generated.length} team(s)`);
+        setRefreshKey((k) => k + 1);
+      } else {
+        toast.success("All approved teams already have a password");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to generate passwords");
+    } finally {
+      setGeneratingPasswords(false);
+    }
+  };
+
   const handleExport = async (format) => {
     setExporting(true);
     try {
@@ -154,6 +173,10 @@ export default function RegistrationListPage() {
           <button className="btn-secondary" onClick={handleSync} disabled={syncing}>
             <FiUploadCloud className={syncing ? "animate-pulse" : ""} size={15} />
             {syncing ? "Syncing…" : "Sync from Form"}
+          </button>
+          <button className="btn-secondary" onClick={handleBulkGeneratePasswords} disabled={generatingPasswords}>
+            <FiKey size={15} />
+            {generatingPasswords ? "Generating…" : "Generate All Passwords"}
           </button>
           <button className="btn-secondary" onClick={() => handleExport("csv")} disabled={exporting}>
             <FiDownload size={15} /> CSV
