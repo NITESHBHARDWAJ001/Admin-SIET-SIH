@@ -36,6 +36,56 @@ async function listProblemStatements(req, res) {
   res.json({ data: withCountsData });
 }
 
+async function getSelectionOverview(req, res) {
+  const [statements, teams] = await Promise.all([
+    sheetsService.getRows("ProblemStatements"),
+    sheetsService.getRows("Registration"),
+  ]);
+
+  const teamsByProblemId = {};
+  teams.forEach((t) => {
+    if (!t.selectedProblemStatementId) return;
+    if (!teamsByProblemId[t.selectedProblemStatementId]) teamsByProblemId[t.selectedProblemStatementId] = [];
+    teamsByProblemId[t.selectedProblemStatementId].push({
+      id: t.id,
+      teamId: t.teamId,
+      teamName: t.teamName,
+      lockedAt: t.selectionLockedAt,
+    });
+  });
+
+  const statementsWithTeams = statements
+    .map((p) => {
+      const selectedTeams = (teamsByProblemId[p.problemId] || []).sort((a, b) =>
+        (a.lockedAt || "").localeCompare(b.lockedAt || "")
+      );
+      const capacity = Number(p.capacity) || 0;
+      return {
+        id: p.id,
+        problemId: p.problemId,
+        title: p.title,
+        theme: p.theme,
+        capacity,
+        taken: selectedTeams.length,
+        remaining: Math.max(0, capacity - selectedTeams.length),
+        teams: selectedTeams,
+      };
+    })
+    .sort((a, b) => a.problemId.localeCompare(b.problemId, undefined, { numeric: true }));
+
+  const pendingTeams = teams
+    .filter((t) => t.status === "Approved" && !t.selectedProblemStatementId)
+    .map((t) => ({
+      id: t.id,
+      teamId: t.teamId,
+      teamName: t.teamName,
+      hasPassword: Boolean(t.teamPassword),
+    }))
+    .sort((a, b) => a.teamId.localeCompare(b.teamId, undefined, { numeric: true }));
+
+  res.json({ data: { statements: statementsWithTeams, pendingTeams } });
+}
+
 async function createProblemStatement(req, res) {
   const { title, theme, description, capacity } = req.body;
   if (!title || !theme || !capacity) {
@@ -89,6 +139,7 @@ async function deleteProblemStatement(req, res) {
 
 module.exports = {
   listProblemStatements,
+  getSelectionOverview,
   createProblemStatement,
   updateProblemStatement,
   deleteProblemStatement,

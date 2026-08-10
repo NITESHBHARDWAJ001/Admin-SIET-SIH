@@ -5,6 +5,11 @@ export async function fetchProblemStatements() {
   return data.data;
 }
 
+export async function fetchSelectionOverview() {
+  const { data } = await apiClient.get("/problem-statements/selection-overview");
+  return data.data;
+}
+
 export async function createProblemStatement(payload) {
   const { data } = await apiClient.post("/problem-statements", payload);
   return data.data;

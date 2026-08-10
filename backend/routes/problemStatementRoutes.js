@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   listProblemStatements,
+  getSelectionOverview,
   createProblemStatement,
   updateProblemStatement,
   deleteProblemStatement,
@@ -15,6 +16,7 @@ const canManage = requireRole("SuperAdmin", "FacultyCoordinator");
 router.use(requireAuth);
 
 router.get("/", listProblemStatements);
+router.get("/selection-overview", getSelectionOverview);
 router.post("/", canManage, createProblemStatement);
 router.patch("/:id", canManage, updateProblemStatement);
 router.delete("/:id", canManage, deleteProblemStatement);

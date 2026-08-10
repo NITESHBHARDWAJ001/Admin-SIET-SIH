@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { FiPlus, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiEdit2, FiUsers } from "react-icons/fi";
 import {
   fetchProblemStatements,
   createProblemStatement,
@@ -83,9 +84,14 @@ export default function ProblemStatementsPage() {
           <h1 className="font-heading text-xl font-semibold text-ink">Problem Statements</h1>
           <p className="text-sm text-slate-500">{statements.length} problem statements</p>
         </div>
-        <button className="btn-primary" onClick={openCreate}>
-          <FiPlus size={15} /> Add Problem Statement
-        </button>
+        <div className="flex items-center gap-2">
+          <Link to="/problem-statements/selections" className="btn-secondary">
+            <FiUsers size={15} /> Team Selections
+          </Link>
+          <button className="btn-primary" onClick={openCreate}>
+            <FiPlus size={15} /> Add Problem Statement
+          </button>
+        </div>
       </div>
 
       {showForm && (

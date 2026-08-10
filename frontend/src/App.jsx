@@ -8,6 +8,7 @@ import RegistrationListPage from "./pages/registration/RegistrationListPage";
 import TeamProfilePage from "./pages/registration/TeamProfilePage";
 import SubmissionsPage from "./pages/submissions/SubmissionsPage";
 import ProblemStatementsPage from "./pages/problemstatements/ProblemStatementsPage";
+import ProblemSelectionOverviewPage from "./pages/problemstatements/ProblemSelectionOverviewPage";
 import JudgesPage from "./pages/judges/JudgesPage";
 import JudgeDetailPage from "./pages/judges/JudgeDetailPage";
 import EvaluationPage from "./pages/evaluation/EvaluationPage";
@@ -57,6 +58,7 @@ function App() {
           <Route path="/registrations/:id" element={<TeamProfilePage />} />
           <Route path="/submissions" element={<SubmissionsPage />} />
           <Route path="/problem-statements" element={<ProblemStatementsPage />} />
+          <Route path="/problem-statements/selections" element={<ProblemSelectionOverviewPage />} />
           <Route path="/judges" element={<JudgesPage />} />
           <Route path="/judges/:id" element={<JudgeDetailPage />} />
           <Route path="/evaluation" element={<EvaluationPage />} />
