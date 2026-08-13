@@ -19,8 +19,8 @@ export async function submitPublicRegistration(payload) {
   return data.data;
 }
 
-export async function lookupPublicTeam(query) {
-  const { data } = await publicClient.get("/teams/lookup", { params: { query } });
+export async function authenticateTeamForSubmission(teamId, password) {
+  const { data } = await publicClient.post("/submissions/auth", { teamId, password });
   return data.data;
 }
 

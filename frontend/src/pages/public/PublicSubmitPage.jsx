@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { FiSearch, FiCheckCircle } from "react-icons/fi";
-import { fetchPublicSettings, lookupPublicTeam, submitPublicSubmission } from "../../services/publicApi";
+import { FiLock, FiCheckCircle } from "react-icons/fi";
+import {
+  fetchPublicSettings,
+  authenticateTeamForSubmission,
+  submitPublicSubmission,
+} from "../../services/publicApi";
 import { SkeletonBlock } from "../../components/Skeleton";
+import { formatDateTime } from "../../utils/formatters";
 
 export default function PublicSubmitPage() {
   const [settings, setSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [looking, setLooking] = useState(false);
-  const [team, setTeam] = useState(null);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [teamId, setTeamId] = useState("");
+  const [password, setPassword] = useState("");
+  const [authenticating, setAuthenticating] = useState(false);
+  const [session, setSession] = useState(null);
   const [success, setSuccess] = useState(false);
 
   const {
@@ -23,34 +29,33 @@ export default function PublicSubmitPage() {
     fetchPublicSettings()
       .then(setSettings)
       .catch(() => toast.error("Failed to load submission status"))
-      .finally(() => setLoading(false));
+      .finally(() => setLoadingSettings(false));
   }, []);
 
-  const handleLookup = async (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    setLooking(true);
+    if (!teamId.trim() || !password.trim()) return;
+    setAuthenticating(true);
     try {
-      const found = await lookupPublicTeam(query.trim());
-      setTeam(found);
+      const result = await authenticateTeamForSubmission(teamId.trim(), password.trim());
+      setSession(result);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Team not found");
-      setTeam(null);
+      toast.error(err.response?.data?.message || "Authentication failed");
     } finally {
-      setLooking(false);
+      setAuthenticating(false);
     }
   };
 
   const onSubmit = async (values) => {
     try {
-      await submitPublicSubmission({ ...values, teamId: team.teamId });
+      await submitPublicSubmission({ ...values, teamId: session.teamId, password: password.trim() });
       setSuccess(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Submission failed. Please try again.");
     }
   };
 
-  if (loading) {
+  if (loadingSettings) {
     return (
       <div className="space-y-4">
         <SkeletonBlock className="h-8 w-64" />
@@ -76,8 +81,8 @@ export default function PublicSubmitPage() {
         <FiCheckCircle size={40} className="text-success mx-auto mb-3" />
         <h1 className="font-heading text-xl font-semibold text-ink">Submission Received!</h1>
         <p className="text-sm text-slate-500 mt-2">
-          Your prototype for <strong>{team.teamName}</strong> has been submitted. You can come back and
-          resubmit any time before the deadline — it will replace your previous submission.
+          Your prototype for <strong>{session.teamName}</strong> has been submitted. Submission is one-time
+          only, so this cannot be changed.
         </p>
       </div>
     );
@@ -88,35 +93,62 @@ export default function PublicSubmitPage() {
       <div>
         <h1 className="font-heading text-xl font-semibold text-ink">Submit Your Prototype</h1>
         <p className="text-sm text-slate-500">
-          Find your team using your Team ID or the leader's email, then upload your submission links.
+          Enter your Team ID and the password provided by the organizers. Submission is one-time only, so
+          double-check your links before submitting.
         </p>
       </div>
 
-      {!team ? (
-        <form onSubmit={handleLookup} className="card p-5">
-          <label className="text-xs text-slate-400">Team ID or Leader Email</label>
-          <div className="flex gap-2 mt-1">
+      {!session ? (
+        <form onSubmit={handleAuth} className="card p-5 space-y-3">
+          <div>
+            <label className="text-xs text-slate-400">Team ID</label>
             <input
-              className="input"
-              placeholder="e.g. SIH26-014 or leader@siet.ac.in"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              className="input mt-1"
+              placeholder="e.g. SIH26-014"
+              value={teamId}
+              onChange={(e) => setTeamId(e.target.value)}
             />
-            <button className="btn-primary shrink-0" disabled={looking}>
-              <FiSearch size={15} /> {looking ? "Searching…" : "Find Team"}
-            </button>
           </div>
+          <div>
+            <label className="text-xs text-slate-400">Password</label>
+            <input
+              className="input mt-1"
+              type="password"
+              placeholder="Password from the organizers"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <button className="btn-primary" disabled={authenticating}>
+            <FiLock size={14} /> {authenticating ? "Verifying…" : "Continue"}
+          </button>
         </form>
+      ) : session.locked ? (
+        <div className="card p-8 text-center">
+          <FiCheckCircle size={40} className="text-success mx-auto mb-3" />
+          <h2 className="font-heading text-lg font-semibold text-ink">Already Submitted</h2>
+          <p className="text-sm text-slate-500 mt-2">
+            <strong>{session.teamName}</strong> has already submitted. Submission is one-time only.
+          </p>
+          <p className="text-xs text-slate-400 mt-2">Submitted {formatDateTime(session.submission?.submissionTime)}</p>
+        </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="card p-4 flex items-center justify-between">
             <div>
               <p className="text-xs text-slate-400">Submitting as</p>
               <p className="font-medium text-ink dark:text-slate-100">
-                {team.teamName} ({team.teamId})
+                {session.teamName} ({session.teamId})
               </p>
             </div>
-            <button type="button" className="btn-secondary" onClick={() => setTeam(null)}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                setSession(null);
+                setPassword("");
+              }}
+            >
               Not your team?
             </button>
           </div>
@@ -141,7 +173,7 @@ export default function PublicSubmitPage() {
           </div>
 
           <button type="submit" className="btn-primary" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting…" : "Submit Prototype"}
+            {isSubmitting ? "Submitting…" : "Submit Prototype (one-time only)"}
           </button>
         </form>
       )}

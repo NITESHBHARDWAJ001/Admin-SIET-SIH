@@ -141,26 +141,39 @@ async function createPublicRegistration(req, res) {
   res.status(201).json({ data: { teamId: created.teamId, teamName: created.teamName } });
 }
 
-async function lookupPublicTeam(req, res) {
-  const query = sanitizeString(req.query.query).toLowerCase();
-  if (!query) return res.status(400).json({ message: "Enter a Team ID or leader email to search" });
-
-  const teams = await sheetsService.getRows("Registration");
-  const team = teams.find(
-    (t) =>
-      t.teamId?.toLowerCase() === query || t.teamLeaderEmailAddress?.toLowerCase() === query
-  );
-
-  if (!team) {
-    return res.status(404).json({ message: "No team found with that Team ID or email" });
-  }
-  if (team.status !== "Approved") {
-    return res.status(403).json({
-      message: `Team ${team.teamId} is ${team.status.toLowerCase()} and not yet approved to submit`,
-    });
+async function authenticateTeamForSubmission(req, res) {
+  const submissionOpen = await getSettingValue("submissionOpen", "false");
+  if (submissionOpen !== "true") {
+    return res.status(403).json({ message: "Submissions are currently closed" });
   }
 
-  res.json({ data: { teamId: team.teamId, teamName: team.teamName } });
+  const { teamId, password } = req.body || {};
+  if (!teamId || !password) {
+    return res.status(400).json({ message: "Team ID and password are required" });
+  }
+
+  const { team, error } = await findTeamByCredentials(teamId, password);
+  if (error) return res.status(error.status).json({ message: error.message });
+
+  const submissions = await sheetsService.getRows("Submission");
+  const existing = submissions.find((s) => s.teamId === team.teamId);
+
+  res.json({
+    data: {
+      teamId: team.teamId,
+      teamName: team.teamName,
+      locked: Boolean(existing),
+      submission: existing
+        ? {
+            githubRepository: existing.githubRepository,
+            ppt: existing.ppt,
+            demoVideo: existing.demoVideo,
+            description: existing.description,
+            submissionTime: existing.submissionTime,
+          }
+        : null,
+    },
+  });
 }
 
 async function createOrUpdatePublicSubmission(req, res) {
@@ -170,14 +183,18 @@ async function createOrUpdatePublicSubmission(req, res) {
   }
 
   const body = req.body || {};
-  const teamId = sanitizeString(body.teamId);
-  if (!teamId) return res.status(400).json({ message: "teamId is required" });
+  const { teamId, password } = body;
+  if (!teamId || !password) {
+    return res.status(400).json({ message: "Team ID and password are required" });
+  }
 
-  const teams = await sheetsService.getRows("Registration");
-  const team = teams.find((t) => t.teamId === teamId);
-  if (!team) return res.status(404).json({ message: "Team not found" });
-  if (team.status !== "Approved") {
-    return res.status(403).json({ message: "Only approved teams can submit" });
+  const { team, error } = await findTeamByCredentials(teamId, password);
+  if (error) return res.status(error.status).json({ message: error.message });
+
+  const submissions = await sheetsService.getRows("Submission");
+  const existing = submissions.find((s) => s.teamId === team.teamId);
+  if (existing) {
+    return res.status(409).json({ message: "Your team has already submitted. Submission is one-time only." });
   }
 
   const hasAnyLink = body.githubRepository || body.ppt || body.demoVideo;
@@ -185,11 +202,8 @@ async function createOrUpdatePublicSubmission(req, res) {
     return res.status(400).json({ message: "Provide at least one of: repository, PPT, or demo video link" });
   }
 
-  const submissions = await sheetsService.getRows("Submission");
-  const existing = submissions.find((s) => s.teamId === teamId);
-
   const payload = {
-    teamId,
+    teamId: team.teamId,
     teamName: team.teamName,
     githubRepository: sanitizeString(body.githubRepository),
     ppt: sanitizeString(body.ppt),
@@ -199,20 +213,15 @@ async function createOrUpdatePublicSubmission(req, res) {
     status: "Pending",
   };
 
-  let saved;
-  if (existing) {
-    saved = await sheetsService.updateRow("Submission", existing.id, payload);
-  } else {
-    saved = await sheetsService.appendRow("Submission", { ...payload, remarks: [], createdAt: new Date().toISOString() });
-  }
+  const saved = await sheetsService.appendRow("Submission", { ...payload, remarks: [], createdAt: new Date().toISOString() });
 
   await logAction(
     { user: null, ip: req.ip },
-    existing ? "Public Submission Updated" : "Public Submission Created",
-    `${team.teamName} (${teamId})`
+    "Public Submission Created",
+    `${team.teamName} (${team.teamId})`
   );
 
-  res.status(existing ? 200 : 201).json({ data: { teamId: saved.teamId, status: saved.status } });
+  res.status(201).json({ data: { teamId: saved.teamId, status: saved.status } });
 }
 
 async function listPublicResources(req, res) {
@@ -260,7 +269,7 @@ async function findTeamByCredentials(teamId, password) {
   const team = teams.find((t) => t.teamId?.toLowerCase() === sanitizeString(teamId).toLowerCase());
   if (!team) return { error: { status: 404, message: "No team found with that Team ID" } };
   if (team.status !== "Approved") {
-    return { error: { status: 403, message: "Only approved teams can select a problem statement" } };
+    return { error: { status: 403, message: "Only approved teams can proceed" } };
   }
   if (!team.teamPassword) {
     return { error: { status: 403, message: "No password has been issued for this team yet" } };
@@ -385,7 +394,7 @@ module.exports = {
   getPublicSettings,
   listPublicAnnouncements,
   createPublicRegistration,
-  lookupPublicTeam,
+  authenticateTeamForSubmission,
   createOrUpdatePublicSubmission,
   listPublicResources,
   listPublicProblemStatements,
